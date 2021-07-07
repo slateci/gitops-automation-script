@@ -100,42 +100,57 @@ for Entry in ChangedFiles:
             instanceConfig.update(
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
             )
+        
+        if (instanceConfig["instance"]):
+            appVersion = ""
+            if instanceConfig.get("appVersion"):
+                appVersion = instanceConfig["appVersion"]
+            instanceID = instanceConfig["instance"]
+            valuesString = open(containerName + "/" + "values.yaml", "r").read()
+            uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
+            print(uri)
+            response = requests.put(
+                uri,
+                params={"token": slateToken},
+                json={"apiVersion": "v1alpha3", "configuration": valuesString},
+            )
+            print(response, response.text)
+        else:
+            clusterName = instanceConfig["cluster"]
+            groupName = instanceConfig["group"]
+            appName = instanceConfig["app"]
+            appVersion = ""
+            if instanceConfig.get("appVersion"):
+                appVersion = instanceConfig["appVersion"]
 
-        clusterName = instanceConfig["cluster"]
-        groupName = instanceConfig["group"]
-        appName = instanceConfig["app"]
-        appVersion = ""
-        if instanceConfig.get("appVersion"):
-            appVersion = instanceConfig["appVersion"]
-
-        valuesString = open(containerName + "/" + "values.yaml", "r").read()
-        uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
-        print(uri)
-        response = requests.post(
-            uri,
-            params={"token": slateToken},
-            json={
-                "apiVersion": "v1alpha3",
-                "group": groupName,
-                "cluster": clusterName,
-                "configuration": valuesString,
-            },
-        )
-        print(response, response.text)
-        if response.status_code == 200:
-            instanceID = response.json()["metadata"]["id"]
-            # Open instance.yaml for writing and writeback instance ID
-            try:
-                instanceFile = open(containerName + "/" + "instance.yaml", "a")
-                instanceFile.write("\ninstance: " + instanceID)
-                # Git add commit push
-                print("::set-output name=push::true")
-            except Exception as e:
-                print(
-                    "Failed to open instance file for ID writeback:",
-                    containerName + "/" + "instance.yaml",
-                    e,
-                )
+            valuesString = open(containerName + "/" + "values.yaml", "r").read()
+            uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
+            print(uri)
+            response = requests.post(
+                uri,
+                params={"token": slateToken},
+                json={
+                    "apiVersion": "v1alpha3",
+                    "group": groupName,
+                    "cluster": clusterName,
+                    "configuration": valuesString,
+                },
+            )
+            print(response, response.text)
+            if response.status_code == 200:
+                instanceID = response.json()["metadata"]["id"]
+                # Open instance.yaml for writing and writeback instance ID
+                try:
+                    instanceFile = open(containerName + "/" + "instance.yaml", "a")
+                    instanceFile.write("\ninstance: " + instanceID)
+                    # Git add commit push
+                    print("::set-output name=push::true")
+                except Exception as e:
+                    print(
+                        "Failed to open instance file for ID writeback:",
+                        containerName + "/" + "instance.yaml",
+                        e,
+                    )
     # Remove an instance
     elif FileStatus == "D":
         print(
