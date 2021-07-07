@@ -53,6 +53,13 @@ for Entry in ChangedFiles:
             )
         instanceConfig = {}
         for line in instanceDetails:
+            if (line == ""):
+                continue
+            if (not line.__contains__(":")):
+                print(
+                    "Skipping malformed line", line
+                )
+                continue
             instanceConfig.update(
                 {line.split(": ")[0].strip(): line.split(": ")[1].strip()}
             )
