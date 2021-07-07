@@ -102,19 +102,8 @@ for Entry in ChangedFiles:
             )
         
         if (instanceConfig["instance"]):
-            appVersion = ""
-            if instanceConfig.get("appVersion"):
-                appVersion = instanceConfig["appVersion"]
-            instanceID = instanceConfig["instance"]
-            valuesString = open(containerName + "/" + "values.yaml", "r").read()
-            uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
-            print(uri)
-            response = requests.put(
-                uri,
-                params={"token": slateToken},
-                json={"apiVersion": "v1alpha3", "configuration": valuesString},
-            )
-            print(response, response.text)
+            print("Detected newly added but existing instance...no changes to make")
+            continue
         else:
             clusterName = instanceConfig["cluster"]
             groupName = instanceConfig["group"]
