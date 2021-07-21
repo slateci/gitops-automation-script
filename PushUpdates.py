@@ -98,7 +98,7 @@ for Entry in ChangedFiles:
         for line in instanceDetails:
             if (line == ""):
                 continue
-            if (not line.__contains__(":")):
+            if ":" not in line:
                 print(
                     "Skipping malformed line", line
                 )
