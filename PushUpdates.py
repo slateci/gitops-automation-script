@@ -95,7 +95,9 @@ for Entry in ChangedFiles:
             )
 
         instanceConfig = {}
+        print(f"{instanceConfig}")
         for line in instanceDetails:
+            print(f"{line}")
             # Parse key value pairs from the instance file into a dict
             instanceConfig.update(
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
