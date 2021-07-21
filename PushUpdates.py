@@ -96,6 +96,13 @@ for Entry in ChangedFiles:
 
         instanceConfig = {}
         for line in instanceDetails:
+            if (line == ""):
+                continue
+            if ":" not in line:
+                print(
+                    "Skipping malformed line", line
+                )
+                continue
             # Parse key value pairs from the instance file into a dict
             instanceConfig.update(
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
