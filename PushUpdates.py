@@ -108,7 +108,7 @@ for Entry in ChangedFiles:
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
             )
         
-        if (instanceConfig["instance"]):
+        if ("instance" in instanceConfig.keys()):
             print("Detected newly added but existing instance...no changes to make")
             continue
         else:
