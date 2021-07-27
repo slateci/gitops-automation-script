@@ -96,14 +96,19 @@ for Entry in ChangedFiles:
 
         instanceConfig = {}
         for line in instanceDetails:
-            if line.strip() == "":
+            if (line.strip() == ""):
+                continue
+            if ":" not in line:
+                print(
+                    "Skipping malformed line", line
+                )
                 continue
             # Parse key value pairs from the instance file into a dict
             instanceConfig.update(
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
             )
         
-        if (instanceConfig["instance"]):
+        if ("instance" in instanceConfig.keys()):
             print("Detected newly added but existing instance...no changes to make")
             continue
         else:
