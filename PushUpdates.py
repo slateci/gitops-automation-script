@@ -96,7 +96,7 @@ for Entry in ChangedFiles:
 
         instanceConfig = {}
         for line in instanceDetails:
-            if (line == ""):
+            if (line.strip() == ""):
                 continue
             if ":" not in line:
                 print(
