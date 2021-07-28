@@ -53,7 +53,7 @@ for Entry in ChangedFiles:
             )
         instanceConfig = {}
         for line in instanceDetails:
-            if (line == ""):
+            if (line.strip() == ""):
                 continue
             if (not line.__contains__(":")):
                 print(
