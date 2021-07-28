@@ -14,7 +14,9 @@ slateToken = sys.argv[2]
 try:
     ChangedFiles = open(PathToChangedFiles, "r").read().split("\n")
 except Exception as e:
-    print("Failed to open temp file", PathToChangedFiles, e)
+    sys.stderr.write(f"Failed to open temp file  {PathToChangedFiles}: {e}")
+    sys.exit(1)
+
 
 for Entry in ChangedFiles:
     print(Entry, "\n")
@@ -46,16 +48,14 @@ for Entry in ChangedFiles:
                 containerName + "/" + "instance.yaml", "r"
             ).readlines()
         except Exception as e:
-            print(
-                "Failed to open instance file for reading:",
-                containerName + "/" + "instance.yaml",
-                e,
-            )
+            sys.stderr.write("Failed to open instance file for reading:"
+                             f"{containerName}/instance.yaml: {e}\n")
+            continue
         instanceConfig = {}
         for line in instanceDetails:
-            if (line.strip() == ""):
+            if line.strip() == "":
                 continue
-            if (not line.__contains__(":")):
+            if not line.__contains__(":"):
                 print(
                     "Skipping malformed line", line
                 )
@@ -80,7 +80,12 @@ for Entry in ChangedFiles:
             json={"apiVersion": "v1alpha3", "configuration": valuesString},
         )
         print(response, response.text)
-
+        if response.status_code == 200:
+            sys.stdout.write(f"Successfully updated instance {instanceID}")
+        else:
+            sys.stderr.write("Encountered error while adding instance\n")
+            sys.stderr.write(f"Got a {response.status_code} from the server")
+            sys.exit(1)
     # Create a new instance
     elif FileStatus == "A":
         try:
@@ -88,15 +93,13 @@ for Entry in ChangedFiles:
                 containerName + "/" + "instance.yaml", "r"
             ).readlines()
         except Exception as e:
-            print(
-                "Failed to open instance file for reading:",
-                containerName + "/" + "instance.yaml",
-                e,
-            )
+            sys.stderr.write("Failed to open instance file for reading: "
+                             f"{containerName}/instance.yaml: {e}\n")
+            continue
 
         instanceConfig = {}
         for line in instanceDetails:
-            if (line.strip() == ""):
+            if line.strip() == "":
                 continue
             if ":" not in line:
                 print(
@@ -108,7 +111,7 @@ for Entry in ChangedFiles:
                 {line.split(":")[0].strip(): line.split(":")[1].strip()}
             )
         
-        if ("instance" in instanceConfig.keys()):
+        if "instance" in instanceConfig.keys():
             print("Detected newly added but existing instance...no changes to make")
             continue
         else:
@@ -147,10 +150,16 @@ for Entry in ChangedFiles:
                         containerName + "/" + "instance.yaml",
                         e,
                     )
+            else:
+                sys.stderr.write("Encountered error while adding instance\n")
+                sys.stderr.write(f"Got a {response.status_code} from the server")
+                sys.exit(1)
+
     # Remove an instance
     elif FileStatus == "D":
         print(
             "Deletion is not implemented. Your instance is still running in SLATE despite file deletion."
         )
     else:
-        print("Error: Invalid file status passed by actions")
+        sys.stderr.write("Error: Invalid file status passed by actions\n")
+        sys.exit(1)
