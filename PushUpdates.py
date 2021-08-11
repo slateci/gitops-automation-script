@@ -70,6 +70,9 @@ for Entry in ChangedFiles:
         appVersion = ""
         if instanceConfig.get("appVersion"):
             appVersion = instanceConfig["appVersion"]
+        if "instance" not in instanceConfig:
+            sys.stderr.write(f"Can't find instance in config, skipping: {instanceConfig}\n")
+            continue
         instanceID = instanceConfig["instance"]
         valuesString = open(containerName + "/" + "values.yaml", "r").read()
         uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
