@@ -70,7 +70,7 @@ for Entry in ChangedFiles:
         appVersion = ""
         if instanceConfig.get("appVersion"):
             appVersion = instanceConfig["appVersion"]
-        if "instance" not in instanceConfig:
+        if "instance" not in instanceConfig or instanceConfig["instance"] =="":
             sys.stderr.write(f"Can't find instance in config, skipping: {instanceConfig}\n")
             continue
         instanceID = instanceConfig["instance"]
