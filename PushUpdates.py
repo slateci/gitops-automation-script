@@ -140,7 +140,14 @@ for Entry in ChangedFiles:
             )
             print(response, response.text)
             if response.status_code == 200:
+                response_json = response.json()
+                if "metadata" not in response_json or "id" not in response_json["metadata"]:
+                    sys.stderr.write("Did not get an instance id in response\n")
+                    sys.exit(1)
                 instanceID = response.json()["metadata"]["id"]
+                if instanceID == "":
+                    sys.stderr.write("Got a blank instance id in response\n")
+                    sys.exit(1)
                 # Open instance.yaml for writing and writeback instance ID
                 try:
                     instanceFile = open(containerName + "/" + "instance.yaml", "a")
