@@ -58,7 +58,7 @@ def send_mail() -> None:
     sys.exit(0)
 
 
-if __name__ == "main":
+if __name__ == "__main__":
   if not verify_env():
     sys.stderr.write("Missing mailgun variables, exiting")
     sys.exit(1)
