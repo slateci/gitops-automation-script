@@ -186,7 +186,8 @@ for Entry in ChangedFiles:
                     instanceID = get_instance_id(clusterName, appName, retries=3)
                     if instanceID is None:
                         sys.exit(1)
-                instanceID = response.json()["metadata"]["id"]
+                instanceID = response_json["metadata"]["id"]
+                print("parsed id")
                 if instanceID == "":
                     # try to get the instance from slate after waiting
                     sys.stderr.write("Got a blank instance id in response\n")
@@ -199,6 +200,8 @@ for Entry in ChangedFiles:
                 try:
                     instanceFile = open(containerName + "/" + "instance.yaml", "a")
                     instanceFile.write("\ninstance: " + instanceID)
+                    instanceFile.close()
+                    print("wrote instance.yaml")
                     # Git add commit push
                     print("::set-output name=push::true")
                 except Exception as e:
