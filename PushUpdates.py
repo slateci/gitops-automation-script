@@ -33,6 +33,7 @@ def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str
         response = requests.post(uri,
                                  params={"token": slateToken, "cluster": cluster},
                                  json={"apiVersion": "v1alpha3", "cluster": cluster})
+        print(response, response.text)
         if response.status_code == 200:
             slate_response = response.json()
             for item in slate_response['items']:
