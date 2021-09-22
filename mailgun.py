@@ -52,7 +52,7 @@ def send_mail() -> None:
                          data={"from": os.environ['MAILGUN_FROM'],
                                "to": os.environ['MAILGUN_SEND_TO'],
                                "subject": os.environ['MAILGUN_SUBJECT'],
-                               "text": os.environ['MAILGUN_BODY']})
+                               "text": mail_body})
   if r.status_code != requests.codes.ok:
     sys.stderr.write(f"Can't send email got HTTP code {r.status_code}: {r.text}")
     sys.exit(1)
