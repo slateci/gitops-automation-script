@@ -101,8 +101,9 @@ for Entry in ChangedFiles:
             )
         if not instanceConfig.get("instance"):
             print(
-                "Failed to find instance ID for:", containerName + "/" + "values.yaml"
+                f"Failed to find instance ID for {containerName} in {containerName}/instance.yaml"
             )
+            sys.exit(1)
         appVersion = ""
         if instanceConfig.get("appVersion"):
             appVersion = instanceConfig["appVersion"]
