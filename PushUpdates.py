@@ -22,7 +22,7 @@ def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str
     :param retries: number of times to retry, defaults to one retry
     :return: instance id or None if id is not available
     """
-
+    print(cluster, app, retries)
     if retries is None:
         current_retries = 1
     else:
