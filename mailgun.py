@@ -46,7 +46,7 @@ def send_mail() -> None:
   mailgun_url = f"https://api.mailgun.net/v3/{mailgun_domain}/messages"
   mail_body = os.environ['MAILGUN_BODY']
   if len(mail_body.strip()) == 0:
-    mail_body = "No changes in this update"
+    mail_body = "Could not retrieve changes for this update"
   r = requests.post(mailgun_url,
                          auth=("api", os.environ['MAILGUN_API_KEY']),
                          data={"from": os.environ['MAILGUN_FROM'],
