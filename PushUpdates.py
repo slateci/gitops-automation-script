@@ -123,6 +123,7 @@ for Entry in ChangedFiles:
         print(response, response.text)
         if response.status_code == 200:
             sys.stdout.write(f"Successfully updated instance {instanceID}")
+            sys.stdout.write("::set-output name=push::true\n")
         else:
             sys.stderr.write("Encountered error while adding instance\n")
             sys.stderr.write(f"Got a {response.status_code} from the server")
@@ -203,7 +204,7 @@ for Entry in ChangedFiles:
                     instanceFile.close()
                     print("wrote instance.yaml")
                     # Git add commit push
-                    print("::set-output name=push::true")
+                    sys.stdout.write("::set-output name=push::true\n")
                 except Exception as e:
                     print(
                         "Failed to open instance file for ID writeback:",
