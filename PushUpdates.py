@@ -51,7 +51,7 @@ def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str
 try:
     ChangedFiles = open(PathToChangedFiles, "r").read().split("\n")
 except Exception as e:
-    sys.stderr.write(f"Failed to open temp file  {PathToChangedFiles}: {e}")
+    sys.stderr.write(f"Failed to open temp file  {PathToChangedFiles}: {e}\n")
     sys.exit(1)
 
 
@@ -122,11 +122,11 @@ for Entry in ChangedFiles:
         )
         print(response, response.text)
         if response.status_code == 200:
-            sys.stdout.write(f"Successfully updated instance {instanceID}")
+            sys.stdout.write(f"Successfully updated instance {instanceID}\n")
             sys.stdout.write("::set-output name=push::true\n")
         else:
             sys.stderr.write("Encountered error while adding instance\n")
-            sys.stderr.write(f"Got a {response.status_code} from the server")
+            sys.stderr.write(f"Got a {response.status_code} from the server\n")
             sys.exit(1)
     # Create a new instance
     elif FileStatus == "A":
@@ -182,8 +182,8 @@ for Entry in ChangedFiles:
                 response_json = response.json()
                 if "metadata" not in response_json or "id" not in response_json["metadata"]:
                     sys.stderr.write("Did not get an instance id in response\n")
-                    sys.stdout.write("Didn't get instance id from SLATE response")
-                    sys.stdout.write("Sleeping for 30s before querying SLATE for instance id")
+                    sys.stdout.write("Didn't get instance id from SLATE response\n")
+                    sys.stdout.write("Sleeping for 30s before querying SLATE for instance id\n")
                     instanceID = get_instance_id(clusterName, appName, retries=3)
                     if instanceID is None:
                         sys.exit(1)
@@ -192,7 +192,7 @@ for Entry in ChangedFiles:
                 if instanceID == "":
                     # try to get the instance from slate after waiting
                     sys.stderr.write("Got a blank instance id in response\n")
-                    sys.stdout.write("Sleeping for 30s before querying SLATE for instance id")
+                    sys.stdout.write("Sleeping for 30s before querying SLATE for instance id\n")
                     time.sleep(30)
                     instanceID = get_instance_id(clusterName, appName, retries=3)
                     if instanceID is None:
@@ -213,7 +213,7 @@ for Entry in ChangedFiles:
                     )
             else:
                 sys.stderr.write("Encountered error while adding instance\n")
-                sys.stderr.write(f"Got a {response.status_code} from the server")
+                sys.stderr.write(f"Got a {response.status_code} from the server\n")
                 sys.exit(1)
 
     # Remove an instance
