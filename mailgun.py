@@ -31,7 +31,7 @@ def verify_env() -> bool:
   env_vars = set(os.environ.keys())
   if not mailgun_vars <= env_vars:
     difference = mailgun_vars - env_vars
-    sys.stderr.write(f"Not all mailgun variables set, missing: {difference}")
+    sys.stderr.write(f"Not all mailgun variables set, missing: {difference}\n")
     return False
   return True
 
@@ -54,15 +54,15 @@ def send_mail() -> None:
                                "subject": os.environ['MAILGUN_SUBJECT'],
                                "text": mail_body})
   if r.status_code != requests.codes.ok:
-    sys.stderr.write(f"Can't send email got HTTP code {r.status_code}: {r.text}")
+    sys.stderr.write(f"Can't send email got HTTP code {r.status_code}: {r.text}\n")
     sys.exit(1)
   else:
-    sys.stdout.write("Sent email through mailgun")
+    sys.stdout.write("Sent email through mailgun\n")
     sys.exit(0)
 
 
 if __name__ == "__main__":
   if not verify_env():
-    sys.stderr.write("Missing mailgun variables, exiting")
+    sys.stderr.write("Missing mailgun variables, exiting\n")
     sys.exit(1)
   send_mail()
