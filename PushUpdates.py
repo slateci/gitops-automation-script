@@ -113,7 +113,8 @@ for Entry in ChangedFiles:
             continue
         instanceID = instanceConfig["instance"]
         valuesString = open(containerName + "/" + "values.yaml", "r").read()
-        uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
+        # uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
+        uri = "https://api.slateci.io:18080/v1alpha3/instances/" + instanceID + "/update"
         print(uri)
         response = requests.put(
             uri,
@@ -165,7 +166,8 @@ for Entry in ChangedFiles:
                 appVersion = instanceConfig["appVersion"]
 
             valuesString = open(containerName + "/" + "values.yaml", "r").read()
-            uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
+            # uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
+            uri = "https://api.slateci.io:18080/v1alpha3/apps/" + appName
             print(uri)
             response = requests.post(
                 uri,
