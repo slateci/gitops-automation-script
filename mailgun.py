@@ -23,7 +23,6 @@ def verify_env() -> bool:
   :return: True if environment okay, False otherwise
   """
   mailgun_vars = {'MAILGUN_SUBJECT',
-                  'MAILGUN_BODY',
                   'MAILGUN_API_KEY',
                   'MAILGUN_DOMAIN',
                   'MAILGUN_FROM',
