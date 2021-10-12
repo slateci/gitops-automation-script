@@ -44,15 +44,17 @@ def send_mail() -> None:
   """
   mailgun_domain = os.environ['MAILGUN_DOMAIN']
   mailgun_url = f"https://api.mailgun.net/v3/{mailgun_domain}/messages"
-  mail_body = os.environ['MAILGUN_BODY']
-  if len(mail_body.strip()) == 0:
-    mail_body = "Could not retrieve changes for this update"
+  text_body = open('text_body').read()
+  html_body = open('html_body').read()
+  if len(text_body) == 0 and len(html_body) == 0:
+    text_body = "Could not retrieve changes for this update"
   r = requests.post(mailgun_url,
                          auth=("api", os.environ['MAILGUN_API_KEY']),
                          data={"from": os.environ['MAILGUN_FROM'],
                                "to": os.environ['MAILGUN_SEND_TO'],
                                "subject": os.environ['MAILGUN_SUBJECT'],
-                               "text": mail_body})
+                               "text": text_body,
+                               "html": html_body})
   if r.status_code != requests.codes.ok:
     sys.stderr.write(f"Can't send email got HTTP code {r.status_code}: {r.text}\n")
     sys.exit(1)
