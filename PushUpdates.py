@@ -18,7 +18,7 @@ slateToken = sys.argv[2]
 if 'DEBUG' in os.environ and os.environ['DEBUG'] == 'TRUE':
     logging.basicConfig(level=logging.DEBUG)
 else:
-    logging.basicConfig()
+    logging.basicConfig(level=logging.DEBUG)
 
 
 def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str]:
@@ -200,7 +200,7 @@ for Entry in ChangedFiles:
             )
         if not instanceConfig.get("instance"):
             logging.error(f"Failed to find instance ID for {containerName} in {containerName}/instance.yaml")
-            logging.error("Trying to add instance instead...")
+            logging.warning("Trying to add instance instead...")
             add_instance()
             sys.exit(0)
         appVersion = ""
