@@ -102,7 +102,7 @@ jobs:
 
 Copy the `generate_mail_body.py` script and `templates` directory to the repository with the 
 configuration files.  Modify the script and templates to match the desired output.  This 
-should be sufficient.
+should be sufficient. **NOTE: GITHUB_URL in `generate_mail_body.py` must be changed**
 
 ## Testing
 
