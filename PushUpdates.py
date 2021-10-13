@@ -50,8 +50,8 @@ def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str
                 if instance_id == "":
                     continue
                 return instance_id
-        logging.error("Didn't get instance id from SLATE response\n")
-        logging.error("Sleeping for 30s before querying SLATE for instance id\n")
+        logging.error("Didn't get instance id from SLATE response")
+        logging.error("Sleeping for 30s before querying SLATE for instance id")
         time.sleep(30)
     return None
 
@@ -65,8 +65,7 @@ def add_instance() -> None:
     try:
         instanceDetails = open(f"{containerName}/instance.yaml", "r").readlines()
     except Exception as e:
-        sys.stderr.write("Failed to open instance file for reading: "
-                         f"{containerName}/instance.yaml: {e}\n")
+        logging.exception("Failed to open instance file for reading: {containerName}/instance.yaml")
         sys.exit(1)
 
     instanceConfig = {}
@@ -114,9 +113,9 @@ def add_instance() -> None:
         if response.status_code == 200:
             response_json = response.json()
             if "metadata" not in response_json or "id" not in response_json["metadata"]:
-                sys.stderr.write("Did not get an instance id in response\n")
-                sys.stdout.write("Didn't get instance id from SLATE response\n")
-                sys.stdout.write("Sleeping for 30s before querying SLATE for instance id\n")
+                logging.warning("Did not get an instance id in response")
+                logging.warning("Didn't get instance id from SLATE response")
+                logging.warning("Sleeping for 30s before querying SLATE for instance id")
                 instance_id = get_instance_id(clusterName, appName, retries=3)
                 if instance_id is None:
                     sys.exit(1)
@@ -124,8 +123,8 @@ def add_instance() -> None:
             print("parsed id")
             if instance_id == "":
                 # try to get the instance from slate after waiting
-                sys.stderr.write("Got a blank instance id in response\n")
-                sys.stdout.write("Sleeping for 30s before querying SLATE for instance id\n")
+                logging.warning("Got a blank instance id in response")
+                logging.warning("Sleeping for 30s before querying SLATE for instance id")
                 time.sleep(30)
                 instance_id = get_instance_id(clusterName, appName, retries=3)
                 if instance_id is None:
@@ -141,23 +140,23 @@ def add_instance() -> None:
             except IOError:
                 logging.exception(f"Failed to update instance file with ID: {containerName}/instance.yaml")
         else:
-            logging.error("Encountered error while adding instance\n")
-            logging.error(f"Got a {response.status_code} from the server\n")
+            logging.error("Encountered error while adding instance")
+            logging.error(f"Got a {response.status_code} from the server")
             sys.exit(1)
 
 
 try:
     ChangedFiles = open(PathToChangedFiles, "r").read().split("\n")
 except Exception as e:
-    logging.error(f"Failed to open temp file  {PathToChangedFiles}: {e}\n")
+    logging.exception(f"Failed to open temp file  {PathToChangedFiles}: {e}")
     sys.exit(1)
 
 
 for Entry in ChangedFiles:
-    print(Entry, "\n")
+    logging.info(Entry)
     # Parse entry containing file name and change status
     if Entry == "":
-        print("Skipping file", Entry, "\n")
+        logging.warning(f"Skipping file {Entry}")
         continue
     # Status: M = Modified, A = Added, D = Removed
     FileStatus = Entry.split()[0]
@@ -167,24 +166,21 @@ for Entry in ChangedFiles:
     containerName = FileName.split("/values.yaml")[0]
     # Skip irrelevant files
     if containerName.__contains__("."):
-        print("Skipping file", Entry, "\n")
+        logging.warning(f"Skipping file {Entry}")
         continue
     if not FileName.__contains__("values.yaml"):
         if FileName.__contains__("instance.yaml"):
-            print("Not implemented: Version update")
+            logging.error("Not implemented: Version update")
         else:
-            print("Skipping file", Entry, "\n")
+            logging.warning(f"Skipping file {Entry}")
             continue
 
     # Update an instance
     if FileStatus == "M":
         try:
-            instanceDetails = open(
-                containerName + "/" + "instance.yaml", "r"
-            ).readlines()
-        except Exception as e:
-            sys.stderr.write("Failed to open instance file for reading:"
-                             f"{containerName}/instance.yaml: {e}\n")
+            instanceDetails = open(f"{containerName}/instance.yaml", "r").readlines()
+        except Exception:
+            logging.exception(f"Failed to open instance file for reading: {containerName}/instance.yaml")
             continue
         instanceConfig = {}
         for line in instanceDetails:
@@ -202,12 +198,14 @@ for Entry in ChangedFiles:
             logging.error(f"Failed to find instance ID for {containerName} in {containerName}/instance.yaml")
             logging.warning("Trying to add instance instead...")
             add_instance()
-            sys.exit(0)
+            continue
         appVersion = ""
         if instanceConfig.get("appVersion"):
             appVersion = instanceConfig["appVersion"]
         if "instance" not in instanceConfig or instanceConfig["instance"] == "":
-            sys.stderr.write(f"Can't find instance in config, skipping: {instanceConfig}\n")
+            logging.error(f"Can't find instance in config, skipping: {instanceConfig}")
+            logging.warning("Trying to add instance instead...")
+            add_instance()
             continue
         instanceID = instanceConfig["instance"]
         valuesString = open(containerName + "/" + "values.yaml", "r").read()
@@ -216,20 +214,20 @@ for Entry in ChangedFiles:
         # we only need to use the proxy to talk to the api server from
         # facilities like TACC
         # uri = "https://api.slateci.io:443/v1alpha3/instances/" + instanceID + "/update"
-        uri = "https://api.slateci.io:18080/v1alpha3/instances/" + instanceID + "/update"
+        uri = f"https://api.slateci.io:18080/v1alpha3/instances/{instanceID}/update"
         logging.debug(f"Contacting {uri}")
         response = requests.put(
             uri,
             params={"token": slateToken},
             json={"apiVersion": "v1alpha3", "configuration": valuesString},
         )
-        logging.debug(response, response.text)
+        logging.debug(f"Got {response} from the server: {response.text}")
         if response.status_code == 200:
-            logging.info(f"Successfully updated instance {instanceID}\n")
+            logging.info(f"Successfully updated instance {instanceID}")
             sys.stdout.write("::set-output name=push::true\n")
         else:
-            logging.error("Encountered error while adding instance\n")
-            logging.error(f"Got a {response.status_code} from the server\n")
+            logging.error("Encountered error while adding instance")
+            logging.error(f"Got a {response.status_code} from the server")
             sys.exit(1)
     # Create a new instance
     elif FileStatus == "A":
@@ -238,5 +236,5 @@ for Entry in ChangedFiles:
     elif FileStatus == "D":
         logging.warning("Deletion is not implemented. Your instance is still running in SLATE despite file deletion.")
     else:
-        logging.error("Error: Invalid file status passed by actions\n")
+        logging.error("Error: Invalid file status passed by actions")
         sys.exit(1)
