@@ -1,0 +1,21 @@
+Configuration changes made to deployed sites by {{ author }} on {{ date }} with the
+following comment:
+
+    {{ message }}
+
+The following sites have been updated:
+
+{% for site in sites %}
+  * {{ site }}
+{% endfor %}
+
+The complete changes can be viewed at {{ commit_url }}.
+Small changes of less than 30 lines are given below:
+{% if change_size <= 100 %}
+    {% for changed_file in changes %}
+        {% if changed_file.size <= 30 %}
+  * {{ changed_file.name }} changed with the following:
+{{ changed_file.patch }}
+        {% endif %}
+    {% endfor %}
+{% endif %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ATLAS Squid Gitops Changes</title>
+</head>
+<body>
+<p>
+    Configuration changes made to deployed sites by {{ author }} on {{ date }} with the
+    following comment:
+</p>
+<p>{{ message }}</p>
+
+<p>The following sites have been updated:</p>
+<ul>
+{% for site in sites %}
+    <li>{{ site }}</li>
+{% endfor %}
+</ul>
+
+<p>The complete changes can be viewed at <a href="{{ commit_url }}">{{ commit_url }}</a>.
+<p>Small changes of less than 30 lines are given below:</p>
+<ul>
+{% if change_size <= 100 %}
+    {% for changed_file in changes %}
+        {% if changed_file.size <= 30 %}
+        <li>{{ changed_file.name }} changed with the following:<br>
+            <p>{{ changed_file.patch | replace("\n", "<br/>") }}</p>
+        </li>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+</ul>
+
+</body>
+</html>
