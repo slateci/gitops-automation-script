@@ -101,8 +101,8 @@ jobs:
 ## Mail script
 
 Copy the `generate_mail_body.py` script and `templates` directory to the repository with the 
-configuration files.  Modify the script and templates to match the desired output.  This 
-should be sufficient. **NOTE: GITHUB_URL in `generate_mail_body.py` must be changed**
+configuration files.  Modify the script and templates to match the desired output.  
+**NOTE: GITHUB_URL in `generate_mail_body.py` must be changed to point to the correct repo.** 
 
 ## Testing
 
