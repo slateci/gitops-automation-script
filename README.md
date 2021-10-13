@@ -22,7 +22,7 @@ email.
 ## Github actions 
 
 Create a github action in the repository that has the configurations.  The 
-actions file should be similar to the following:
+actions file should be similar to the following with the appropriate changes (**NOTE: must change recipients**):
 
 ```yaml
 name: SLATE Deployment
