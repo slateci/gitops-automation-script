@@ -1,4 +1,4 @@
-#Instructions on using gitops automation
+# Instructions on using gitops automation
 
 ## Requirements
 
