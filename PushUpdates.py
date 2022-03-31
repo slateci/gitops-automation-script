@@ -56,7 +56,7 @@ def get_instance_id(cluster: str, app: str, retries: int = None) -> Optional[str
     return None
 
 
-def add_instance() -> None:
+def add_instance() -> bool:
     """
     Add an instance to slate api server
 
@@ -66,7 +66,7 @@ def add_instance() -> None:
         instanceDetails = open(f"{containerName}/instance.yaml", "r").readlines()
     except Exception as e:
         logging.exception("Failed to open instance file for reading: {containerName}/instance.yaml")
-        sys.exit(1)
+        return False
 
     instanceConfig = {}
     for line in instanceDetails:
@@ -82,67 +82,70 @@ def add_instance() -> None:
 
     if "instance" in instanceConfig.keys():
         logging.warning("Detected newly added but existing instance...no changes to make")
-        sys.exit(1)
-    else:
-        clusterName = instanceConfig["cluster"]
-        groupName = instanceConfig["group"]
-        appName = instanceConfig["app"]
-        appVersion = ""
-        if instanceConfig.get("appVersion"):
-            appVersion = instanceConfig["appVersion"]
+        return False
 
-        valuesString = open(containerName + "/" + "values.yaml", "r").read()
-        # Using port 443 goes to the nginx proxy in front of the api server
-        # using this in gh actions often results in a timeout,
-        # we only need to use the proxy to talk to the api server from
-        # facilities like TACC
-        # uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
-        uri = "https://api.slateci.io:18080/v1alpha3/apps/" + appName
-        logging.debug(f"Contacting {uri}")
-        response = requests.post(
-            uri,
-            params={"token": slateToken},
-            json={
-                "apiVersion": "v1alpha3",
-                "group": groupName,
-                "cluster": clusterName,
-                "configuration": valuesString,
-            },
-        )
-        logging.debug(f"Got {response}, with output {response.text}")
-        if response.status_code == 200:
-            response_json = response.json()
-            if "metadata" not in response_json or "id" not in response_json["metadata"]:
-                logging.warning("Did not get an instance id in response")
-                logging.warning("Didn't get instance id from SLATE response")
-                logging.warning("Sleeping for 30s before querying SLATE for instance id")
-                instance_id = get_instance_id(clusterName, appName, retries=3)
-                if instance_id is None:
-                    sys.exit(1)
-            instance_id = response_json["metadata"]["id"]
-            print("parsed id")
-            if instance_id == "":
-                # try to get the instance from slate after waiting
-                logging.warning("Got a blank instance id in response")
-                logging.warning("Sleeping for 30s before querying SLATE for instance id")
-                time.sleep(30)
-                instance_id = get_instance_id(clusterName, appName, retries=3)
-                if instance_id is None:
-                    sys.exit(1)
-            # Open instance.yaml for writing and writeback instance ID
-            try:
-                instance_file = open(f"{containerName}/instance.yaml", "a")
-                instance_file.write(f"\ninstance: {instance_id}")
-                instance_file.close()
-                logging.info("Wrote instance.yaml")
-                # Git add commit push
-                sys.stdout.write("::set-output name=push::true\n")
-            except IOError:
-                logging.exception(f"Failed to update instance file with ID: {containerName}/instance.yaml")
-        else:
-            logging.error("Encountered error while adding instance")
-            logging.error(f"Got a {response.status_code} from the server")
-            sys.exit(1)
+    clusterName = instanceConfig["cluster"]
+    groupName = instanceConfig["group"]
+    appName = instanceConfig["app"]
+    appVersion = ""
+    if instanceConfig.get("appVersion"):
+        appVersion = instanceConfig["appVersion"]
+
+    valuesString = open(containerName + "/" + "values.yaml", "r").read()
+    # Using port 443 goes to the nginx proxy in front of the api server
+    # using this in gh actions often results in a timeout,
+    # we only need to use the proxy to talk to the api server from
+    # facilities like TACC
+    # uri = "https://api.slateci.io:443/v1alpha3/apps/" + appName
+    uri = "https://api.slateci.io:18080/v1alpha3/apps/" + appName
+    logging.debug(f"Contacting {uri}")
+    response = requests.post(
+        uri,
+        params={"token": slateToken},
+        json={
+            "apiVersion": "v1alpha3",
+            "group": groupName,
+            "cluster": clusterName,
+            "configuration": valuesString,
+        },
+    )
+    logging.debug(f"Got {response}, with output {response.text}")
+    if response.status_code == 200:
+        response_json = response.json()
+        if "metadata" not in response_json or "id" not in response_json["metadata"]:
+            logging.warning("Did not get an instance id in response")
+            logging.warning("Didn't get instance id from SLATE response")
+            logging.warning("Sleeping for 30s before querying SLATE for instance id")
+            instance_id = get_instance_id(clusterName, appName, retries=3)
+            if instance_id is None:
+                logging.error("Can't get instance id")
+                return False
+        instance_id = response_json["metadata"]["id"]
+        print("parsed id")
+        if instance_id == "":
+            # try to get the instance from slate after waiting
+            logging.warning("Got a blank instance id in response")
+            logging.warning("Sleeping for 30s before querying SLATE for instance id")
+            time.sleep(30)
+            instance_id = get_instance_id(clusterName, appName, retries=3)
+            if instance_id is None:
+                logging.error("Can't get instance id, moving onto next entry")
+                return False
+        # Open instance.yaml for writing and writeback instance ID
+        try:
+            instance_file = open(f"{containerName}/instance.yaml", "a")
+            instance_file.write(f"\ninstance: {instance_id}")
+            instance_file.close()
+            logging.info("Wrote instance.yaml")
+            # Git add commit push
+            sys.stdout.write("::set-output name=push::true\n")
+        except IOError:
+            logging.exception(f"Failed to update instance file with ID: {containerName}/instance.yaml")
+    else:
+        logging.error("Encountered error while adding instance")
+        logging.error(f"Got a {response.status_code} from the server")
+        return False
+    return True
 
 
 try:
@@ -232,7 +235,9 @@ for Entry in ChangedFiles:
             continue
     # Create a new instance
     elif FileStatus == "A":
-        add_instance()
+        if not add_instance():
+            logging.error("Got error while adding new instance, processing next entry")
+            continue
     # Remove an instance
     elif FileStatus == "D":
         logging.warning("Deletion is not implemented. Your instance is still running in SLATE despite file deletion.")
