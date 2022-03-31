@@ -228,7 +228,8 @@ for Entry in ChangedFiles:
         else:
             logging.error("Encountered error while adding instance")
             logging.error(f"Got a {response.status_code} from the server")
-            sys.exit(1)
+            logging.error("Processing next entry")
+            continue
     # Create a new instance
     elif FileStatus == "A":
         add_instance()
