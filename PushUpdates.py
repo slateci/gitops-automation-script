@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import logging
+import json
 from typing import Optional
 
 import requests
@@ -222,7 +223,7 @@ for Entry in ChangedFiles:
         response = requests.put(
             uri,
             params={"token": slateToken},
-            json={"apiVersion": "v1alpha3", "configuration": valuesString},
+            json=json.dumps({"apiVersion": "v1alpha3", "configuration": valuesString}),
         )
         logging.debug(f"Got {response} from the server: {response.text}")
         if response.status_code == 200:
