@@ -1,3 +1,7 @@
+**[[ DEPRECATED ]]**
+
+*This project has reached the end of its development and is being replaced by [slateci/github-actions](https://github.com/slateci/github-actions).*
+
 # Instructions on using gitops automation
 
 ## Requirements
